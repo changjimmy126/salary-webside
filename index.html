@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>賺錢計算器</title>
+    <style>
+        /* 頁面背景和整體設計 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff; /* 藍色系背景，紓壓感 */
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+            color: #333;
+        }
+
+        h1 {
+            color: #2e8b57; /* 樹綠色 */
+            font-size: 3em;
+            margin-bottom: 30px;
+        }
+
+        /* 輸入框和按鈕設計 */
+        input {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 2px solid #b0e0e6;
+            transition: border 0.3s ease;
+        }
+
+        input:focus {
+            border: 2px solid #4682b4; /* 聚焦時顯示藍色邊框 */
+        }
+
+        /* 顯示金額的文字 */
+        #earnings {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff8c00; /* 橙色，用來突出金額 */
+            margin-top: 20px;
+            animation: bounce 0.5s ease-out infinite;
+        }
+
+        /* 金幣動畫 */
+        #coin {
+            font-size: 3em;
+            color: gold;
+            animation: bounceCoin 0.5s ease-out infinite;
+            position: relative;
+            top: -10px;
+        }
+
+        /* 金幣跳動動畫 */
+        @keyframes bounceCoin {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* 數字顯示動畫 */
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* 按鈕和其他UI */
+        button {
+            background-color: #32cd32; /* 綠色 */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #228b22; /* 深綠色 */
+        }
+
+    </style>
+</head>
+<body>
+    <h1>賺錢計算器</h1>
+    <label for="hourlyRate">時薪 (元/小時): </label>
+    <input type="number" id="hourlyRate" placeholder="輸入時薪">
+    <br><br>
+    <label for="startTime">上班開始時間 (24小時制): </label>
+    <input type="time" id="startTime">
+    <br><br>
+    <label for="endTime">上班結束時間 (24小時制): </label>
+    <input type="time" id="endTime">
+    <br><br>
+    <div id="earnings">你目前賺了: <span id="coin">💰</span> 0 元</div>
+
+    <script>
+        let hourlyRate, startTime, endTime;
+
+        document.getElementById("hourlyRate").addEventListener("input", updateEarnings);
+        document.getElementById("startTime").addEventListener("input", updateEarnings);
+        document.getElementById("endTime").addEventListener("input", updateEarnings);
+
+        function updateEarnings() {
+            hourlyRate = parseFloat(document.getElementById("hourlyRate").value);
+            startTime = document.getElementById("startTime").value;
+            endTime = document.getElementById("endTime").value;
+
+            if (hourlyRate && startTime && endTime) {
+                const currentTime = new Date();
+                const start = new Date(currentTime);
+                const end = new Date(currentTime);
+
+                const [startHour, startMinute] = startTime.split(":");
+                const [endHour, endMinute] = endTime.split(":");
+
+                start.setHours(startHour, startMinute, 0);
+                end.setHours(endHour, endMinute, 0);
+
+                // 計算已經工作的時間
+                let workedHours = (currentTime - start) / (1000 * 60 * 60); // 換算成小時
+                if (currentTime > end) workedHours = (end - start) / (1000 * 60 * 60); // 如果已經下班，結束計算
+
+                const earnings = workedHours * hourlyRate;
+                document.getElementById("earnings").textContent = `你目前賺了: ${earnings.toFixed(2)} 元`;
+            }
+        }
+    </script>
+</body>
+</html>
