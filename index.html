@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>薪水計算器</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap');
+        
+        @keyframes mining {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
         body {
-            font-family: 'Nunito', sans-serif;
+            font-family: 'Quicksand', sans-serif;
             text-align: center;
-            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
             height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: background 1s ease-in-out;
         }
         .container {
             background: rgba(255, 255, 255, 0.9);
@@ -22,7 +28,6 @@
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             width: 350px;
-            animation: fadeIn 1s ease-in-out;
         }
         input {
             width: 80%;
@@ -43,17 +48,6 @@
             cursor: pointer;
             font-size: 18px;
             font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(255, 126, 179, 0.4);
-        }
-        #salaryDisplay {
-            font-size: 28px;
-            font-weight: bold;
-            margin-top: 20px;
-            animation: bounce 1s infinite alternate;
         }
         .progress-bar {
             width: 80%;
@@ -61,44 +55,55 @@
             border-radius: 10px;
             overflow: hidden;
             margin: 10px auto;
+            position: relative;
         }
         .progress {
             height: 20px;
             width: 0%;
             background: #ff7eb3;
-            transition: width 0.5s ease-in-out;
         }
-        #monthlySalary {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
+        .miner {
+            position: absolute;
+            left: 0;
+            top: -30px;
+            animation: mining 1s infinite;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
+        #monthlySalaryBox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>薪水計算器</h2>
+        <input type="text" id="userName" placeholder="輸入您的名字" oninput="updateName()">
+        <h3 id="displayName"></h3>
         <input type="number" id="hourlyRate" placeholder="輸入時薪">
         <input type="number" id="workHours" placeholder="輸入上班時數">
         <button onclick="startWorking()">開始上班</button>
         <button onclick="stopWorking()">結束上班</button>
         <div id="salaryDisplay">$0</div>
-        <div class="progress-bar"><div class="progress" id="progress"></div></div>
-        <div id="monthlySalary">本月累積薪水：$0 (0天)</div>
+        <div class="progress-bar">
+            <img src="https://img.icons8.com/emoji/48/pick-emoji.png" class="miner" id="minerIcon">
+            <div class="progress" id="progress"></div>
+        </div>
     </div>
+    <div id="monthlySalaryBox">本月累積薪水：$0 (0天)</div>
     <script>
         let salary = 0;
         let interval;
         let monthlySalary = 0;
         let workDays = new Set();
+
+        function updateName() {
+            document.getElementById('displayName').textContent = document.getElementById('userName').value;
+        }
 
         function startWorking() {
             const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
@@ -108,7 +113,7 @@
                 return;
             }
             const totalSalary = hourlyRate * workHours;
-            const salaryPerSecond = hourlyRate / 3600;
+            const salaryPerSecond = totalSalary / (workHours * 3600);
             clearInterval(interval);
             salary = 0;
             document.getElementById('salaryDisplay').textContent = "$0";
@@ -116,7 +121,9 @@
             interval = setInterval(() => {
                 salary += salaryPerSecond;
                 document.getElementById('salaryDisplay').textContent = `$${salary.toFixed(2)}`;
-                document.getElementById('progress').style.width = `${(salary / totalSalary) * 100}%`;
+                let progressPercent = (salary / totalSalary) * 100;
+                document.getElementById('progress').style.width = `${progressPercent}%`;
+                document.getElementById('minerIcon').style.left = `${progressPercent}%`;
                 if (salary >= totalSalary) {
                     stopWorking();
                 }
@@ -125,11 +132,14 @@
 
         function stopWorking() {
             clearInterval(interval);
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+            const workHours = parseFloat(document.getElementById('workHours').value);
+            const totalSalary = hourlyRate * workHours;
             const today = new Date().toISOString().split('T')[0];
             workDays.add(today);
-            monthlySalary += salary;
-            document.getElementById('salaryDisplay').textContent = `完成！總薪資：$${salary.toFixed(2)}`;
-            document.getElementById('monthlySalary').textContent = `本月累積薪水：$${monthlySalary.toFixed(2)} (${workDays.size}天)`;
+            monthlySalary += totalSalary;
+            document.getElementById('salaryDisplay').textContent = `完成！總薪資：$${totalSalary.toFixed(2)}`;
+            document.getElementById('monthlySalaryBox').textContent = `本月累積薪水：$${monthlySalary.toFixed(2)} (${workDays.size}天)`;
         }
     </script>
 </body>
